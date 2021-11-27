@@ -11,7 +11,7 @@ namespace LoadUpdatingTool.Data.Entity
         public string? ServicePointName { get; set;}
         [Column("CONVERSION_INFO")]
         public string? ConversationInfo { get; set; }
-        [Column("LOCATION")]
-        public Geometry? Location { get; set; }
+        //[Column("LOCATION")]
+        //public Geometry? Location { get; set; }
     }
 }

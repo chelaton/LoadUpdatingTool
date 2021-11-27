@@ -1,8 +1,12 @@
+using LoadUpdatingTool.Core;
+using LoadUpdatingTool.Data;
+using LoadUpdatingTool.Data.Repository;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LoadUpdatingTool
 {
-    internal static class Program
+    public static class Program
     {
         /// <summary>
         ///  The main entry point for the application.
@@ -10,16 +14,28 @@ namespace LoadUpdatingTool
         [STAThread]
         static void Main()
         {
-            ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            var services = new ServiceCollection();
+
+            ConfigureServices(services);
+
+            using (ServiceProvider serviceProvider = services.BuildServiceProvider())
+            {
+                var mainForm = serviceProvider.GetRequiredService<MainForm>();
+                Application.Run(mainForm);
+            }
         }
 
-        private static void ConfigureServices(ServiceCollection services)
+        static void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<TrainContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddScoped<IBusinessLayer, CBusinessLayer>();
-                    //.AddScoped<IBusinessLayer, CBusinessLayer>()
-                    //.AddSingleton<IDataAccessLayer, CDataAccessLayer>();
+            services.AddLogging();
+            services.AddDbContext<LoadContext>(options => options.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Load;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;"));
+            services.AddScoped<ILoadService, LoadService>();
+            services.AddScoped<ILoadRepository, LoadRepository>();
+            services.AddScoped<MainForm>();
         }
     }
 }
