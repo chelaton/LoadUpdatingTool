@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "LoadUpdatingTool": {
+      "commandName": "Project"
+    }
+  }
+}

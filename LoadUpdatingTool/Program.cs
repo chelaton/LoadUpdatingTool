@@ -12,21 +12,32 @@ namespace LoadUpdatingTool
         ///  The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+
+            if (ProcessCommandLine(args))
+                return;
+
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
-            var services = new ServiceCollection();
-
-            ConfigureServices(services);
 
             using (ServiceProvider serviceProvider = services.BuildServiceProvider())
             {
                 var mainForm = serviceProvider.GetRequiredService<MainForm>();
                 Application.Run(mainForm);
             }
+        }
+
+        private static bool ProcessCommandLine(string[] args)
+        {
+            if (args.Any())
+            {
+                return true;
+            }
+            return false;
         }
 
         static void ConfigureServices(IServiceCollection services)

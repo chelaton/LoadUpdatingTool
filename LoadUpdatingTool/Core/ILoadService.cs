@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LoadUpdatingTool.Data.DTO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ namespace LoadUpdatingTool.Core
 {
     public interface ILoadService
     {
-        void PerformBusiness();
+        List<string> ParseInputFile(string filePath);
+        CurveUpdate VerifyData(List<string> inputList);
     }
 }

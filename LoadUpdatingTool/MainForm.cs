@@ -1,5 +1,6 @@
 using LoadUpdatingTool.Core;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace LoadUpdatingTool
 {
@@ -15,34 +16,88 @@ namespace LoadUpdatingTool
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void addButton_Click(object sender, EventArgs e)
         {
-            try
+            OpenFileDialog openFileDialog1 = new OpenFileDialog
             {
-                _logger.LogInformation("Form1 {BusinessLayerEvent} at {dateTime}", "Started", DateTime.UtcNow);
+                InitialDirectory = @"C:\",
+                Title = "Browse Text Files",
 
-                // Perform Business Logic here 
-                _loadService.PerformBusiness();
+                CheckFileExists = true,
+                CheckPathExists = true,
 
-                MessageBox.Show("Hello .NET Core 6.0 . This is First Forms app in .NET Core");
+                DefaultExt = "txt",
+                Filter = "txt files (*.txt)|*.txt",
+                FilterIndex = 2,
+                RestoreDirectory = true,
 
-                _logger.LogInformation("Form1 {BusinessLayerEvent} at {dateTime}", "Ended", DateTime.UtcNow);
+                ReadOnlyChecked = true,
+                ShowReadOnly = true
+            };
 
-            }
-            catch (Exception ex)
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                //Log technical exception 
-                _logger.LogError(ex.Message);
-                //Return exception repsponse here
-                throw;
-
+                listBoxFiles.Items.Add(openFileDialog1.FileName);
             }
 
         }
 
-        private void GB_LoadData_DragDrop(object sender, DragEventArgs e)
+        private void listBoxFiles_DragDrop(object sender, DragEventArgs e)
         {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (files != null)
+            {
+                foreach (string file in files)
+                    listBoxFiles.Items.Add(file);
+            }
+        }
 
+        private void listBoxFiles_DragEnter(object sender, DragEventArgs e)
+        {
+            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (files != null)
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+        }
+
+        private void removeButton_Click(object sender, EventArgs e)
+        {
+            var selectedItems = new ListBox.SelectedObjectCollection(listBoxFiles);
+            selectedItems = listBoxFiles.SelectedItems;
+
+            if (listBoxFiles.SelectedIndex != -1)
+            {
+                for (int i = selectedItems.Count - 1; i >= 0; i--)
+                    listBoxFiles.Items.Remove(selectedItems[i]);
+            }
+            else
+                MessageBox.Show("bla");
+        }
+
+        private void processButton_Click(object sender, EventArgs e)
+        {
+            foreach (string item in listBoxFiles.Items)
+            {
+                var inputStringData = _loadService.ParseInputFile(item);
+                var verifiedCurveData = _loadService.VerifyData(inputStringData);
+
+                if (verifiedCurveData.VerificationErrors.Count == 0)
+                {
+
+                }
+                else
+                {
+                    _logger.LogError($"Cannot process file {item}:");
+                    ErrorListBox.Items.Add($"Cannot process file {item}:");
+                    foreach (var error in verifiedCurveData.VerificationErrors)
+                    {
+                        ErrorListBox.Items.Add(error);
+
+                        _logger.LogError(error);
+                    }
+                }
+            }
         }
     }
 }
