@@ -1,0 +1,4 @@
+Curve:3
+Customers:1
+Energy MWh:1.40a
+Identifications:14

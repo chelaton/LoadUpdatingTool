@@ -1,0 +1,4 @@
+Curve:2
+Customers:5
+Energy MWh:0,1
+Identifications:13
