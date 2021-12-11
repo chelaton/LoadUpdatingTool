@@ -53,5 +53,6 @@ namespace LoadUpdatingTool.Data.Repository
             _loadContext.SaveChanges();
             return all.Count;
         }
+
     }
 }

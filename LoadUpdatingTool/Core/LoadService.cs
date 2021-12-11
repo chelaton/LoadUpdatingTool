@@ -164,6 +164,11 @@ namespace LoadUpdatingTool.Core
         public int Clear()
         {
             var deletedRecordCount = _loadRepository.DeleteAllTeeLoads();
+            var servicePointsDb = _loadRepository.GetAllServicePoints();
+
+            servicePointsDb.ToList().ForEach(c => c.ConversionInfo = null);
+            _loadRepository.UpdateServicePoints(servicePointsDb.ToList());
+
             return deletedRecordCount;
         }
     }
