@@ -35,6 +35,9 @@
             this.ErrorListBox = new System.Windows.Forms.ListBox();
             this.errorLabel = new System.Windows.Forms.Label();
             this.listBoxLabel = new System.Windows.Forms.Label();
+            this.UpdatedCountLabel = new System.Windows.Forms.Label();
+            this.buttonClear = new System.Windows.Forms.Button();
+            this.clearCountLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // addButton
@@ -78,7 +81,7 @@
             this.processButton.Name = "processButton";
             this.processButton.Size = new System.Drawing.Size(75, 23);
             this.processButton.TabIndex = 3;
-            this.processButton.Text = "Process";
+            this.processButton.Text = "UPDATE";
             this.processButton.UseVisualStyleBackColor = true;
             this.processButton.Click += new System.EventHandler(this.processButton_Click);
             // 
@@ -114,6 +117,34 @@
             this.listBoxLabel.TabIndex = 6;
             this.listBoxLabel.Text = "Selected files to process";
             // 
+            // UpdatedCountLabel
+            // 
+            this.UpdatedCountLabel.AutoSize = true;
+            this.UpdatedCountLabel.ForeColor = System.Drawing.Color.LightGreen;
+            this.UpdatedCountLabel.Location = new System.Drawing.Point(627, 299);
+            this.UpdatedCountLabel.Name = "UpdatedCountLabel";
+            this.UpdatedCountLabel.Size = new System.Drawing.Size(0, 15);
+            this.UpdatedCountLabel.TabIndex = 7;
+            // 
+            // buttonClear
+            // 
+            this.buttonClear.Location = new System.Drawing.Point(822, 295);
+            this.buttonClear.Name = "buttonClear";
+            this.buttonClear.Size = new System.Drawing.Size(75, 23);
+            this.buttonClear.TabIndex = 8;
+            this.buttonClear.Text = "CLEAR";
+            this.buttonClear.UseVisualStyleBackColor = true;
+            this.buttonClear.Click += new System.EventHandler(this.buttonClear_Click);
+            // 
+            // clearCountLabel
+            // 
+            this.clearCountLabel.AutoSize = true;
+            this.clearCountLabel.ForeColor = System.Drawing.Color.LightGreen;
+            this.clearCountLabel.Location = new System.Drawing.Point(906, 299);
+            this.clearCountLabel.Name = "clearCountLabel";
+            this.clearCountLabel.Size = new System.Drawing.Size(0, 15);
+            this.clearCountLabel.TabIndex = 9;
+            // 
             // MainForm
             // 
             this.AllowDrop = true;
@@ -121,6 +152,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ClientSize = new System.Drawing.Size(1076, 346);
+            this.Controls.Add(this.clearCountLabel);
+            this.Controls.Add(this.buttonClear);
+            this.Controls.Add(this.UpdatedCountLabel);
             this.Controls.Add(this.listBoxLabel);
             this.Controls.Add(this.errorLabel);
             this.Controls.Add(this.ErrorListBox);
@@ -131,6 +165,7 @@
             this.Name = "MainForm";
             this.ShowIcon = false;
             this.Text = "Load Updating Tool";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -145,5 +180,8 @@
         private ListBox ErrorListBox;
         private Label errorLabel;
         private Label listBoxLabel;
+        private Label UpdatedCountLabel;
+        private Button buttonClear;
+        private Label clearCountLabel;
     }
 }

@@ -1,14 +1,19 @@
 ﻿using LoadUpdatingTool.Data.DTO;
+using LoadUpdatingTool.Data.Entity;
+using LoadUpdatingTool.Data.Repository;
 
 namespace LoadUpdatingTool.Core
 {
     public class LoadService : ILoadService
     {
-        public LoadService()
+        private readonly ILoadRepository _loadRepository;
+
+        public LoadService(ILoadRepository loadRepository)
         {
+            _loadRepository = loadRepository;
         }
 
-        public CurveUpdate VerifyData(List<string> inputList) 
+        public CurveUpdate VerifyData(List<string> inputList)
         {
             var curveUpdate = new CurveUpdate();
             foreach (var inputLine in inputList)
@@ -20,7 +25,7 @@ namespace LoadUpdatingTool.Core
                     bool success = Int32.TryParse(stringNumber, out number);
                     if (success)
                     {
-                        curveUpdate.Curve=number;
+                        curveUpdate.Curve = number;
                     }
                     else
                     {
@@ -62,17 +67,19 @@ namespace LoadUpdatingTool.Core
                 }
                 else if (inputLine.Contains("Identifications:"))
                 {
-                    var stringNumber = inputLine.Substring(inputLine.LastIndexOf(':') + 1);
+                    var stringNumbers = inputLine.Substring(inputLine.LastIndexOf(':') + 1);
 
-                    int number;
-                    bool success = Int32.TryParse(stringNumber, out number);
-                    if (success)
+                    int identification;
+                    var identificationStringList = stringNumbers.Split(",");
+                    foreach (var identificationString in identificationStringList)
                     {
-                        curveUpdate.Identifications = number;
-                    }
-                    else
-                    {
-                        var errorText = $"Identifications MWh number {stringNumber} isn't in correct format";
+                        bool success = Int32.TryParse(identificationString, out identification);
+                        if (success)
+                        {
+                            curveUpdate.Identifications.Add(identification);
+                            continue;
+                        }
+                        var errorText = $"Identifications {identificationString} isn't in correct format";
                         curveUpdate.VerificationErrors.Add(errorText);
                     }
                 }
@@ -88,6 +95,76 @@ namespace LoadUpdatingTool.Core
                 inputStringList.Add(line);
             }
             return inputStringList;
+        }
+
+        public int ProcessUpdateData(List<CurveUpdate> verifiedCurveDataList)
+        {
+            var servicePointsDb = _loadRepository.GetAllServicePoints();
+            var sysLoadDb = _loadRepository.GetAllSysLoads();
+            var teeLoadDb = _loadRepository.GetAllTeeLoads();
+
+            var teeLoadToInsert = new List<TeeLoadInformationEvw>();
+            var sysLoadToUpdate = new List<SysLoadInformationEvw>();
+            var sysLoadToInsert = new List<SysLoadInformationEvw>();
+            var teeServicePointToUpdate = new List<TeeServicePointEvw>();
+
+            int updatedCount = 0;
+
+            foreach (var load in verifiedCurveDataList)
+            {
+                foreach (var servicePointId in load.Identifications)
+                {
+                    var servicePoint = servicePointsDb.Where(x => x.Id == servicePointId).FirstOrDefault();
+                    if (servicePoint != null)
+                    {
+                        var sysLoad = sysLoadDb.FirstOrDefault(x=>x.RwoGid == servicePoint.Gid);
+                        if (sysLoad != null)  //sysload exists
+                        {
+                            teeLoadToInsert.Add(new TeeLoadInformationEvw() 
+                            { 
+                                Gid = sysLoad.Gid,
+                                EnergyMwh = sysLoad.EnergyMwh,
+                                InsertionTime = sysLoad.InsertionTime,
+                                NumberOfCustomers = sysLoad.NumberOfCustomers,
+                                RwoGid= sysLoad.RwoGid,
+                            });
+
+                            sysLoad.NumberOfCustomers = load.CustomersCount;
+                            sysLoad.EnergyMwh = load.EnergyMWh;
+                            sysLoad.InsertionTime = DateTime.UtcNow;
+                            sysLoadToUpdate.Add(sysLoad);
+
+                            servicePoint.ConversionInfo = $"-LoadSet -{servicePoint.ConversionInfo}";
+                            teeServicePointToUpdate.Add(servicePoint);
+                        }
+                        else //sysload not exists
+                        {
+                            sysLoadToInsert.Add(new SysLoadInformationEvw()
+                            {
+                                InsertionTime = DateTime.UtcNow,
+                                EnergyMwh = load.EnergyMWh,
+                                NumberOfCustomers = load.CustomersCount,
+                                RwoGid = servicePoint.Gid
+                            });
+                        }
+                        updatedCount++;
+                    }
+                }
+            }
+
+            _loadRepository.InsertTeeLoads(teeLoadToInsert);
+            _loadRepository.UpdateSysLoads(sysLoadToUpdate);
+            _loadRepository.InsertSysLoads(sysLoadToInsert);
+            _loadRepository.UpdateServicePoints(teeServicePointToUpdate);
+
+            return updatedCount;
+        }
+
+
+        public int Clear()
+        {
+            var deletedRecordCount = _loadRepository.DeleteAllTeeLoads();
+            return deletedRecordCount;
         }
     }
 }

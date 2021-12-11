@@ -1,6 +1,6 @@
 using LoadUpdatingTool.Core;
+using LoadUpdatingTool.Data.DTO;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 
 namespace LoadUpdatingTool
 {
@@ -77,19 +77,21 @@ namespace LoadUpdatingTool
 
         private void processButton_Click(object sender, EventArgs e)
         {
-            foreach (string item in listBoxFiles.Items)
+            var verifiedCurveDataList = new List<CurveUpdate>();
+            foreach (string item in listBoxFiles.Items)  //pokud by jich byly tisice tak urcte provedu v Parallel.ForEach
             {
                 var inputStringData = _loadService.ParseInputFile(item);
                 var verifiedCurveData = _loadService.VerifyData(inputStringData);
 
                 if (verifiedCurveData.VerificationErrors.Count == 0)
                 {
-
+                    verifiedCurveDataList.Add(verifiedCurveData);
                 }
                 else
                 {
                     _logger.LogError($"Cannot process file {item}:");
                     ErrorListBox.Items.Add($"Cannot process file {item}:");
+                    listBoxFiles.Items.Remove(item);
                     foreach (var error in verifiedCurveData.VerificationErrors)
                     {
                         ErrorListBox.Items.Add(error);
@@ -98,6 +100,29 @@ namespace LoadUpdatingTool
                     }
                 }
             }
+            try
+            {
+                var updatedServicePointCount = _loadService.ProcessUpdateData(verifiedCurveDataList);
+                listBoxFiles.Items.Clear();
+                UpdatedCountLabel.Text = $"Updated {updatedServicePointCount} service points";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+
+        }
+
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonClear_Click(object sender, EventArgs e)
+        {
+            var deletedRecords = _loadService.Clear();
+            clearCountLabel.Text = $"Deleted {deletedRecords} records";
         }
     }
 }

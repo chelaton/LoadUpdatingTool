@@ -4,7 +4,13 @@ namespace LoadUpdatingTool.Data.Repository
 {
     public interface ILoadRepository
     {
-        ServicePoint GetServicePoint(int Id);
-        IQueryable<ServicePoint> GetServicePointList();
+        IQueryable<TeeServicePointEvw> GetAllServicePoints();
+        IQueryable<SysLoadInformationEvw> GetAllSysLoads();
+        IQueryable<TeeLoadInformationEvw> GetAllTeeLoads();
+        void InsertTeeLoads(ICollection<TeeLoadInformationEvw> teeLoadInformationList);
+        void UpdateSysLoads(ICollection<SysLoadInformationEvw> sysLoadInformationList);
+        void InsertSysLoads(ICollection<SysLoadInformationEvw> sysLoadToInsert);
+        void UpdateServicePoints(ICollection<TeeServicePointEvw> servicePointList);
+        int DeleteAllTeeLoads();
     }
 }
